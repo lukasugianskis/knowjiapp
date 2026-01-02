@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="icon" href="webicon.svg" type="image/svg">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Registration</title>
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+body {
+    font-family: Arial,sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+.container {
+    background:white;
+    border-radius:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+    width:100%;
+    max-width:400px;
+    padding:40px;
+}
+.form-group {margin-bottom:20px;}
+h1 {text-align:center;margin-bottom:30px;color:#333;font-size:28px;}
+label {display:block;margin-bottom:8px;color:#555;font-weight:bold;}
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width:100%;
+    padding:12px;
+    border:2px solid #ddd;
+    border-radius:5px;
+    font-size:14px;
+    transition:border-color 0.3s;
+}
+input:focus {outline:none;border-color:#667eea;}
+.tabs {display:flex;gap:10px;margin-bottom:30px;}
+.tab-btn {
+    flex:1;padding:12px;border:none;background:#f0f0f0;color:#333;font-weight:bold;cursor:pointer;border-radius:5px;transition:all 0.3s;
+}
+.tab-btn.active {background:#667eea;color:white;}
+.form-section {display:none;}
+.form-section.active {display:block;}
+button[type="submit"] {
+    width:100%;padding:12px;background:#667eea;color:white;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer;transition:background 0.3s;
+}
+button[type="submit"]:hover {background:#764ba2;}
+#logoutBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 15px;
+    background: #ff4b5c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    display: none;
+}
+#logoutBtn:hover {background:#ff1f3a;}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Welcome</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="form-section active" onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+
+    <!-- Registration Form -->
+    <form id="registerForm" class="form-section" onsubmit="handleRegister(event)">
+        <div class="form-group">
+            <label for="registerUsername">Username:</label>
+            <input type="text" id="registerUsername" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" name="password" required>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+</div>
+
+<button id="logoutBtn" onclick="handleLogout()">Logout</button>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyDjBxNmeQ6IRi8GNwiDE8nQZnlBP_9PiEs",
+    authDomain: "intellecta-bae6d.firebaseapp.com",
+    projectId: "intellecta-bae6d",
+    storageBucket: "intellecta-bae6d.firebasestorage.app",
+    messagingSenderId: "934037113488",
+    appId: "1:934037113488:web:cec0e29bb0ab29b6302615",
+    measurementId: "G-CDWB3D7Q8L"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Check auth state
+onAuthStateChanged(auth, (user) => {
+    if(user){
+        logoutBtn.style.display = 'block'; // show logout
+    } else {
+        logoutBtn.style.display = 'none'; // hide logout
+    }
+});
+
+// Switch tab
+function switchTab(tab) {
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tab+'Form').classList.add('active');
+    event.target.classList.add('active');
+}
+
+// Login
+async function handleLogin(e){
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    try{
+        await signInWithEmailAndPassword(auth,email,password);
+        logoutBtn.style.display = 'block';
+        window.location.href='index.html';
+    }catch(err){
+        alert('Login failed: '+err.message);
+    }
+}
+
+// Register
+async function handleRegister(e){
+    e.preventDefault();
+    const username = document.getElementById('registerUsername').value;
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+
+    try{
+        const userCred = await createUserWithEmailAndPassword(auth,email,password);
+        const user = userCred.user;
+        await setDoc(doc(db,'users',user.uid),{
+            username: username,
+            email: email,
+            createdAt: new Date()
+        });
+        logoutBtn.style.display = 'block';
+        window.location.href='index.html';
+    }catch(err){
+        alert('Registration failed: '+err.message);
+    }
+}
+
+// Logout
+async function handleLogout(){
+    try{
+        await signOut(auth);
+        logoutBtn.style.display='none';
+        alert('Logged out successfully!');
+        window.location.href='login.html'; // redirect to login page
+    }catch(err){
+        alert('Logout failed: '+err.message);
+    }
+}
+
+window.switchTab = switchTab;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.handleLogout = handleLogout;
+</script>
+</body>
+</html>

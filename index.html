@@ -1,0 +1,917 @@
+<head>
+    <link rel="icon" href="webicon.svg" type="image/svg">
+
+   <style>
+/* ====== LOAD LOCAL APTOS FONT ====== */
+@font-face {
+    font-family: "Aptos";
+    src: url("Microsoft Aptos Fonts 2/Aptos-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: "Aptos";
+    src: url("Microsoft Aptos Fonts 2/Aptos-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+}
+@font-face {
+    font-family: "Aptos";
+    src: url("Microsoft Aptos Fonts 2/Aptos-SemiBold.ttf") format("truetype");
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* ====== GLOBAL STYLES ====== */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    background-color: #f7f7f7;
+    font-family: "Aptos", "Segoe UI", sans-serif;
+}
+
+/* OUTER FRAME */
+.outermargins {
+    position: fixed;
+    top: 62.5px;
+    right: 10px;
+    width: 95vw;
+    height: 91vh;
+    border: 2px solid #e6e6e6;
+    border-radius: 20px;
+    background-color: #f7f7f7;
+    box-sizing: border-box;
+    transition: width 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+.outermargins.expanded { width: 85vw; }
+
+.innerContent {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    font-size: 16px;
+    color: #333;
+    padding: 20px 0;
+    width: 100%;
+}
+
+
+
+/* BOOSTER FRAME */
+.boosterframe { width: 225px; height: 45px; border: 2.25px solid #e6e6e6; border-radius: 15px; background: transparent; position: fixed; top: 12px; right: 90px; }
+.boosterframe-seperator { width: 1px; height: 45px; background-color: #e6e6e6; position: fixed; top: 12px; right: 155px; }
+
+/* TOGGLE BUTTON */
+#toggleOuter { position: absolute; bottom: 668px; left: 10px; width: 48px; height: 48px; border-radius: 12px; border: 0; background: transparent; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 1; }
+#toggleOuter::before { content: ''; position: absolute; top:50%; left:50%; width:100%; height:100%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.1); border-radius:12px; opacity:0; transition:opacity 0.2s; z-index:-1; }
+#toggleOuter:hover::before { opacity:0.6; }
+#toggleIcon { width:24px; height:24px; transition: transform 0.4s ease; }
+#toggleIcon.rotated { transform: rotate(180deg); }
+
+/* QUESTION BOX STYLE */
+.question-box {
+    width: 60%;
+    background-color: #fff;
+    border-radius: 25px;
+    border: 2.5px solid #e6e6e6;
+    outline: 4px solid transparent;   
+    outline-offset: -2px;
+    transition: outline-color 0.3s ease, outline-offset 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 30px;
+    margin-bottom: 30px;
+    flex-shrink: -20;           
+    box-sizing: border-box;   
+}
+
+/* Header Tags */
+.question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    position: relative;
+    left: -15px;
+    top: -15px;
+    width: 100%;
+}
+
+.question-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.question-header > .qnum {
+    font-size: 30px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    background-color: transparent;
+    color: #000000;
+}
+
+.tags {
+    display: flex;
+    gap: 8px; 
+}
+
+.tag {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #e3e3e3;
+    color: #000000;
+    font-weight: 510;
+}
+
+/* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown button */
+.dropdown-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+    position: absolute;
+    right: -30px;
+    bottom: -65px;
+
+    width: 220px;              /* BIGGER BOX */
+    padding: 10px;             /* space inside */
+    gap: 6px;
+
+    border: 2px solid #e6e6e6;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 14px;
+
+    display: flex;
+    flex-direction: column;
+
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+}
+
+/* Show dropdown */
+.dropdown.show .dropdown-content {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+/* Dropdown buttons styling */
+.dropdown-content button {
+    background: #fff;
+    border: 0px solid #e6e6e6;
+    padding: 8px 10px;         /* SMALLER BUTTONS */
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    transition: background 0.15s ease;
+}
+
+.dropdown-content button:hover {
+    background: #eeeeee;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+/* Report form modal */
+.report-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right:0; bottom:0;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+.report-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.report-modal-content label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.report-modal-content textarea {
+    resize: none;
+    width: 100%;
+    height: 60px;
+}
+
+.report-modal-content button {
+    padding: 8px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: #fff;
+}
+
+/* Question Text */
+.question-text { 
+    font-weight: 400; 
+    margin-bottom: 0px; 
+    line-height: 1.4; 
+    color: #525151; 
+    position: relative; 
+    left: -5px; 
+    top: -10px;
+    font-size: 110%; 
+    margin-right: -20px; 
+}
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 2px; }
+.option {
+    position: relative; 
+    color : #525151;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.option-circle:hover { background-color: #fff; border-color: #c9c8c8; }
+
+.option-circle {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #e6e6e6;
+    border-radius: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: -20;
+    box-sizing: border-box;
+    transition: background-color 0.4s ease, border-color 0.4s ease;
+    color: #848484;
+}
+
+.option-circle.correct {
+    transform: scale(1.1);
+    transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.2s ease;
+    background-color: #4CAF50;
+    border: 4px solid #c9e9d0;
+    color: #fff;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+.option-circle.wrong {
+    transform: scale(1.1);
+    transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.2s ease;
+    background-color: #F44336;
+    border: 4px solid #e9c9c9;
+    color: #fff;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+.question-box.correct {
+    outline: 4px solid #a7dbb4;
+    transition: outline-color 0.3s ease, outline-offset 0.3s ease;
+    outline-offset: -2px;        
+}
+
+.question-box.wrong {
+    outline: 2.5px solid #e6e6e6; 
+    transition: outline-color 0.3s ease, outline-offset 0.3s ease;
+    outline-offset: -2px;
+}
+
+/* ====== FORCE APTOS FONT AND FIX BOLD FOR QUESTION NUMBER ====== */
+.question-box, 
+.question-box * {
+    font-family: "Aptos", "Segoe UI", sans-serif !important;
+}
+
+.qnum {
+    position: relative;
+    left: 10px;
+    font-weight: 700 !important;
+    font-size: 20px !important; /* adjust size as needed */
+}
+.tag {
+    position: relative;
+    left: 10px;
+    font-weight: 600 !important;
+}
+
+.clickable-square {
+    background-color: #f0f0f0; /* grey square */
+    width: 38px; /* adjust as needed */
+    height: 38px; /* adjust as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px; /* optional rounded corners */
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    position: relative;
+    left: 30px
+}
+
+.clickable-square:hover {
+    background-color: #e0e0e0; /* dims on hover */
+}
+
+.clickable-square img {
+    width: 16px; /* adjust as needed */
+    height: 16px;
+}
+
+.report-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* pushes icon right */
+    width: 100%;
+
+    padding: 6px 10px;
+    margin: 0;
+    border: none;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* TEXT — change font + boldness here */
+.report-text {
+    font-family: "Aptos", sans-serif;
+    font-size: 14px;
+    font-weight: 600; /* change this */
+    color: #333;
+    margin-left: 120px;
+}
+
+/* ICON */
+.report-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.chapter-title {
+    font-size: 32px;        /* text size */
+    font-weight: 700;       /* boldness */
+    color: #222;            /* text color */
+    text-align: center;     /* horizontal position */
+    margin: 10px 0;         /* spacing above/below */
+    position: relative;     
+    top: -5px;              /* move up/down */
+    left: -180px;              /* move left/right */
+}
+
+.question-image {
+    display: block;          /* makes margin auto work */
+    max-width: 100%;         /* don’t exceed container width */
+    height: auto;
+    margin: 10px auto;       /* top/bottom spacing + auto left/right centers it */
+    border-radius: 12px;     /* optional rounding */
+}
+
+/* ANSWERS MODAL */
+.answers-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0);  /* start transparent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;  /* disable clicks when hidden */
+    transition: background 0.3s ease, opacity 0.3s ease;
+}
+
+.answers-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba(0,0,0,0.6); /* dim background when visible */
+}
+
+.answers-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    border-color: #e6e6e6;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    transform: scale(0.9);         /* start slightly smaller */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.answers-modal.show .answers-modal-content {
+    transform: scale(1);           /* scale to normal size */
+    opacity: 1;
+}
+
+.answers-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    border: 4px solid #e6e6e6;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+}
+
+.answers-modal-content h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.answers-modal-content p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.answer-frame {
+    background: #e6f8e6;          /* light green background */
+    border: 2px solid rgb(188, 231, 190);    /* green border */
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    position: relative;
+    top: 15px;
+}
+.answer-frame p {
+    margin: 0;
+    color: #1b5e20;               /* dark green text */
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-answers {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.certified-frame {
+    display: flex;
+    align-items: left;
+    gap: 10px;               
+    background-color: #d3dafd; 
+    border: 0px solid #bce7be; 
+    border-radius: 12px;
+    padding: 8px 12px;
+    width: fit-content;       
+    margin: 10px 0;      /* only top/bottom spacing, no auto */
+    position: relative;
+    left: -287px; 
+    top: -20px;             /* move left/right */
+}
+
+.certified-icon {
+    width: 24px;   /* adjust size as needed */
+    height: 24px;
+    position: relative;
+    top: -3px;      /* center vertically with text */
+}
+
+.certified-text {
+    font-family: "Aptos", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #244081;  /* dark green text */
+    position: relative;
+    left: -3px;     /* center vertically with icon */
+    top: 1px;
+}
+
+.chapter-separator {
+    border: none;           /* remove default border */
+    height: 2px;            /* thin line */
+    background-color: #e6e6e6; /* light grey color */
+    margin: 8px 0;          /* spacing above and below */
+    width: 70%;            /* full width of container */
+}
+
+.sidebar-logo {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    text-decoration: none;
+}
+
+.sidebar-logo img {
+    width: 30px;
+    height: 30px;
+    position: relative;
+    top: 5px;
+    right: -5px;
+}
+
+.sidebar-text {
+    font-family: "Aptos", sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #000;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    position: relative;
+    top: 5px;
+}
+
+/* visible when expanded */
+.sidebar-logo.show-text .sidebar-text {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+#splash {
+    position: fixed;
+    inset: 0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#splash img {
+    width: 160px;
+    height: 160px;
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0.8; transform: scale(0.98); }
+}
+
+/* fade out */
+#splash.hide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Add this inside your <body>, ideally before other content -->
+<a href="YOUR_TARGET_URL_HERE" class="sidebar-logo" id="sidebarLogo">
+    <img src="webicon.svg" alt="Web Icon">
+    <span class="sidebar-text">Intellecta</span>
+</a>
+
+<div class="boosterframe"></div>
+<div class="boosterframe-seperator"></div>
+
+<div class="outermargins" id="outer">
+    <button id="toggleOuter">
+        <img id="toggleIcon" src="sidebar.svg" alt="Toggle">
+    </button>
+   <div class="innerContent">
+    <p class="chapter-title">Chapter 1 - Cells Questionbank</p>
+    <hr class="chapter-separator">
+    <div class="certified-frame">
+        <img src="heart.svg" alt="Certified" class="certified-icon">
+        <span class="certified-text">Certified IGCSE Questions</span>
+    </div>
+</div>
+
+</div>
+</div>
+
+<!-- QUESTION TEMPLATE -->
+<div id="questionTemplate" class="question-box" style="display:none;">
+    <div class="question-header">
+        <div class="question-header-left">
+            <span class="qnum">Question 1</span>
+            <div class="tags"></div>
+        </div>
+        <!-- Dropdown for options -->
+        <div class="dropdown">
+            <button class="dropdown-btn">
+    <div class="clickable-square">
+        <img src="options.svg" alt="Options">
+    </div>
+</button>
+            <div class="dropdown-content">
+            <button class="report-btn">
+    <img src="report-icon.svg" width="16" style="margin-right:10px;" alt="Report">
+    Report Question
+</button>
+                <!-- Future options can go here -->
+            </div>
+        </div>
+    </div>
+    <div class="question-text">Question text here</div>
+    <div class="options">
+        <div class="option"><div class="option-circle">A</div> Option 1</div>
+        <div class="option"><div class="option-circle">B</div> Option 2</div>
+        <div class="option"><div class="option-circle">C</div> Option 3</div>
+        <div class="option"><div class="option-circle">D</div> Option 4</div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener("load", () => {
+        setTimeout(() => {
+            document.getElementById("splash").classList.add("hide");
+        }, 3000);
+    });
+</script>
+
+<!-- REPORT MODAL -->
+<div class="report-modal" id="reportModal">
+    <div class="report-modal-content">
+        <h3>Report Question</h3>
+        <form action="https://formsubmit.co/lukas.ugianskis@gmail.com" method="POST">
+            <label><input type="checkbox" name="issue" value="Incorrect Answer"> Incorrect Answer</label>
+            <label><input type="checkbox" name="issue" value="Typo"> Typo</label>
+            <label><input type="checkbox" name="issue" value="Other"> Other</label>
+            <textarea name="details" placeholder="Describe the issue"></textarea>
+            <button type="submit">Submit Report</button>
+            <button type="button" id="closeModal" style="background:#ccc;color:#000;">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<div id="splash">
+    <img src="iconflashing.svg" alt="App Icon">
+</div>
+
+<script>
+// TOGGLE OUTER FRAME
+const btn = document.getElementById("toggleOuter");
+const outer = document.getElementById("outer");
+const icon = document.getElementById("toggleIcon");
+const logo = document.getElementById("sidebarLogo");
+
+btn.addEventListener("click", () => {
+    outer.classList.toggle("expanded");
+    icon.classList.toggle("rotated");
+    logo.classList.toggle("show-text");
+});
+
+// ADD QUESTION FUNCTION
+let questionCount = 1;
+function addQuestion(questionText, options, correctIndex, tags, imageUrl = null, answerText = "", explanation = "") {
+    const container = document.querySelector(".innerContent");
+    const template = document.getElementById("questionTemplate");
+
+    const newQ = template.cloneNode(true);
+    newQ.style.display = "block";
+    newQ.id = "";
+
+    const currentQuestionIndex = questionCount - 1; // zero-based
+
+    newQ.querySelector(".qnum").textContent = `Question ${questionCount++}`;
+    newQ.querySelector(".question-text").textContent = questionText;
+
+    // Optional image
+    if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.className = "question-image";
+        const optionsDiv = newQ.querySelector(".options");
+        newQ.insertBefore(img, optionsDiv);
+        img.style.maxWidth = "80%";
+        img.style.display = "block";
+        img.style.margin = "10px auto";
+    }
+
+    // Options
+    const optionDivs = newQ.querySelectorAll(".option");
+    const savedChoice = localStorage.getItem(`question-${currentQuestionIndex}`);
+    
+    optionDivs.forEach((div, i) => {
+    const circle = div.querySelector(".option-circle");
+    circle.textContent = String.fromCharCode(65 + i);
+    div.childNodes[1].textContent = options[i];
+
+    // Restore saved choice
+    if (savedChoice && parseInt(savedChoice) === i) {
+        circle.classList.add(i === correctIndex ? "correct" : "wrong", "selected");
+        if (i === correctIndex) newQ.classList.add("correct");
+        else newQ.classList.add("wrong");
+    }
+
+    div.onclick = () => {
+        const circle = div.querySelector(".option-circle");
+        const questionBox = div.closest(".question-box");
+        const isSelected = circle.classList.contains("selected");
+
+        // Remove all highlights first
+        optionDivs.forEach(d => {
+            d.querySelector(".option-circle").classList.remove("correct", "wrong", "selected");
+        });
+        questionBox.classList.remove("correct", "wrong");
+
+        if (!isSelected) {
+            // Select this option
+            circle.classList.add("selected");
+            if (i === correctIndex) {
+                circle.classList.add("correct");
+                questionBox.classList.add("correct");
+            } else {
+                circle.classList.add("wrong");
+                questionBox.classList.add("wrong");
+            }
+            // Save choice
+            localStorage.setItem("lastQuestionAnswered", currentQuestionIndex);
+            localStorage.setItem(`question-${currentQuestionIndex}`, i);
+        } else {
+            // User deselected the option
+            localStorage.removeItem(`question-${currentQuestionIndex}`);
+
+            // Remove lastQuestionAnswered if this was the last one
+            const lastAnswered = parseInt(localStorage.getItem("lastQuestionAnswered"));
+            if (lastAnswered === currentQuestionIndex) {
+                localStorage.removeItem("lastQuestionAnswered");
+            }
+        }
+    };
+});
+
+    // Tags
+    const tagsContainer = newQ.querySelector(".tags");
+    tagsContainer.innerHTML = "";
+    tags.forEach(tagText => {
+        const tagSpan = document.createElement("span");
+        tagSpan.className = "tag";
+        tagSpan.textContent = tagText;
+        tagsContainer.appendChild(tagSpan);
+    });
+
+    // DROPDOWN
+    const dropdownBtn = newQ.querySelector('.dropdown-btn');
+    const dropdown = newQ.querySelector('.dropdown');
+    dropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+    });
+    window.addEventListener('click', () => { dropdown.classList.remove('show'); });
+
+    // ANSWERS BUTTON
+    const answersBtn = document.createElement("button");
+    answersBtn.textContent = "Answer";
+    answersBtn.style.color = "#44b6f3";
+    answersBtn.style.fontSize = "16px";
+    answersBtn.style.padding = "6px 12px";
+    answersBtn.style.borderRadius = "14px";
+    answersBtn.style.border = "0px solid #e6e6e6";
+    answersBtn.style.cursor = "pointer";
+    answersBtn.style.fontWeight = "600";
+    answersBtn.style.background = "#e2f4fe";
+    answersBtn.style.position = "absolute";
+    answersBtn.style.top = "0px";
+    answersBtn.style.right = "15px";
+    answersBtn.style.width = "80px";
+    answersBtn.style.height = "38px";
+    answersBtn.style.transition = "background 0.3s ease";
+
+    answersBtn.addEventListener("mouseover", () => answersBtn.style.background = "#cceafc");
+    answersBtn.addEventListener("mouseout", () => answersBtn.style.background = "#e2f4fe");
+
+    dropdown.parentNode.insertBefore(answersBtn, dropdown);
+
+    // Answers Modal
+    const modal = document.createElement("div");
+    modal.className = "answers-modal";
+    const modalContent = document.createElement("div");
+    modalContent.className = "answers-modal-content";
+    modalContent.innerHTML = `
+        <button class="close-answers">&times;</button>
+        <h3>Markscheme</h3>
+        <div class="answer-frame">
+            <p>${answerText}</p>
+        </div>
+    `;
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    answersBtn.onclick = () => modal.classList.add("show");
+    modalContent.querySelector(".close-answers").onclick = () => modal.classList.remove("show");
+    modal.addEventListener("click", (e) => { if(e.target===modal) modal.classList.remove("show"); });
+
+    container.appendChild(newQ);
+}
+
+// EXAMPLES
+addQuestion(
+    "In a plant, what is formed by a group of xylem vessels?",
+    ["A cell","A tissue","An organ","An organ system"],
+    1,
+    ["IGCSE", "Biology"],
+    null,
+    "A tissue",
+    "Xylem vessels are grouped together to form a tissue, which helps in transporting water and minerals."
+);
+
+addQuestion(
+    "How does a liver cell differ from a palisade cell?",
+    ["A liver cell has a membrane","A liver cell has a vacuole","A liver cell has no cell wall","A liver cell has no cytoplasm"],
+    2,
+    ["IGCSE", "Biology"],
+    null,
+    "A liver cell has no cell wall",
+    "Liver cells are animal cells and do not have a cell wall, whereas palisade cells are plant cells and do have a cell wall."
+);
+
+addQuestion(
+    "How does cell P differ from cell Q?",
+    ["It has no cell wall","It has no chloroplasts","It has no nucleus","It has no vacuole"],
+    1,
+    ["IGCSE", "Biology"],
+    "celldigram1.png",
+    "It has no chloroplasts",
+    "The small dots represent chloroplasts, which are found in plant cells but not in animal cells."
+);
+
+// SCROLL TO LAST ANSWERED QUESTION AFTER 1 SECOND
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        const lastAnswered = localStorage.getItem("lastQuestionAnswered");
+        if (lastAnswered !== null) {
+            const questionBoxes = document.querySelectorAll(".question-box");
+            const index = parseInt(lastAnswered);
+            if (questionBoxes[index]) {
+                questionBoxes[index].scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    }, 500);
+});
+</script>
+</head>
+</script>
+
+</body>
+</html>
